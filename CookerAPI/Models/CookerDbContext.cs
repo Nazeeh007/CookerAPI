@@ -6,9 +6,7 @@ namespace CookerAPI.Models;
 
 public partial class CookerDbContext : DbContext
 {
-    public CookerDbContext()
-	{
-	}   
+
 	public CookerDbContext(DbContextOptions<CookerDbContext> options)
         : base(options)
     {
