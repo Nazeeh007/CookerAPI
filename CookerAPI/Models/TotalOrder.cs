@@ -9,6 +9,8 @@ public partial class TotalOrder
 
     public int? ToBillNo { get; set; }
 
+    public DateTime? ToDate { get; set; }
+
     public int? ToTableNo { get; set; }
 
     public double? ToTotal { get; set; }

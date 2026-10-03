@@ -6,8 +6,7 @@ namespace CookerAPI.Models;
 
 public partial class CookerDbContext : DbContext
 {
-
-	public CookerDbContext(DbContextOptions<CookerDbContext> options)
+    public CookerDbContext(DbContextOptions<CookerDbContext> options)
         : base(options)
     {
     }
@@ -73,9 +72,8 @@ public partial class CookerDbContext : DbContext
 
         modelBuilder.Entity<TotalOrder>(entity =>
         {
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ToDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<UserPass>(entity =>

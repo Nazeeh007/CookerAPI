@@ -31,7 +31,7 @@ namespace CookerAPI.Controllers
 			return groups;
 		}
 
-		[HttpGet("AddGroup")]
+		[HttpPost("AddGroup")]
 		public async Task<IActionResult> AddGroup([FromBody] Group group)
 		{
 			await db.Groups.AddAsync(group);

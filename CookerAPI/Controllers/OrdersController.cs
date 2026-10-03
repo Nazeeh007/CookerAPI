@@ -24,20 +24,134 @@ namespace CookerAPI.Controllers
 			return items;
 		}
 
-		//[HttpGet("AddOrder")]
-		//public async Task<List<Item>> AddOrder([FromBody] Order order)
-		//{
+		[HttpPost("AddOrder")]
+		public async Task<IActionResult> AddOrder([FromBody] NewOrder newOrder)
+		{
+			Order nOrder = new Order();
+			nOrder.OrderBillNo = newOrder.OrderBillNo;
+			nOrder.OrderTableNo = newOrder.OrderTableNo;
+			nOrder.ItmId = newOrder.ItmId;
 
-		//	if (order.OrderBillNo == 0) { 
-		//		order.OrderBillNo = await db.Orders.MaxAsync(o => o.OrderBillNo) + 1;
-		//	}																		 
-		//	order.OrderDate = DateTime.Now;
-		//	order.Quntity = 1;
-		//	if (order.OrderPrice == 0) { 
-		//		order.OrderPrice= await db.Items.Where(i => i.Id == order.ItmId).Select(i => i.ItmPrice).FirstOrDefaultAsync();
-		//	}
 
-		//}
+			if (nOrder.OrderBillNo == 0)
+			{
+				if (db.Orders.Count() == 0)
+				{
+					nOrder.OrderBillNo = 1;
+				}
+				else
+				{
+					nOrder.OrderBillNo = await db.Orders.MaxAsync(o => o.OrderBillNo) + 1;
+				}
+			}
+			nOrder.OrderDate = DateTime.Now;
+			nOrder.Quntity = 1;
+			if (nOrder.OrderPrice == 0)
+			{
+				nOrder.OrderPrice = await db.Items.Where(i => i.Id == nOrder.ItmId).Select(i => i.ItmPrice).FirstOrDefaultAsync();
+			}
+			nOrder.OrderTotal= nOrder.OrderPrice * nOrder.Quntity;
+			nOrder.ConfirmFlag=false;
 
+			db.Orders.Add(nOrder);
+			var update = await db.SaveChangesAsync();
+			if (update != 0) { 
+				calcTotal(nOrder.OrderBillNo, nOrder.OrderTableNo);
+				return Ok();
+			}
+			return BadRequest();
+
+
+		}
+
+		[HttpGet("ChangeQuantity")]
+		public async Task<IActionResult> ChangeQuantity(int orderId, float quantity)
+		{
+			var order = await db.Orders.FindAsync(orderId);
+			if (order == null)
+				return NotFound();
+			order.Quntity = quantity;
+			order.OrderTotal = order.OrderPrice * order.Quntity;
+			db.Orders.Update(order);
+			var update = await db.SaveChangesAsync();
+			if (update != 0) {
+				calcTotal(order.OrderBillNo, order.OrderTableNo);
+				return Ok();
+
+			}
+			return BadRequest();
+		}
+
+		[HttpGet("DeleteOrder")]
+		public async Task<IActionResult> DeleteOrder(int orderId)
+		{
+			var order = await db.Orders.FindAsync(orderId);
+			if (order == null)
+				return NotFound();
+			
+			db.Orders.Remove(order);
+			var update = await db.SaveChangesAsync();
+			if (update != 0) {
+				calcTotal(order.OrderBillNo, order.OrderTableNo);
+				return Ok();
+			}
+			return BadRequest();
+		}
+
+		[HttpGet("ConfirmOrder")]
+		public async Task<IActionResult> ConfirmOrder(int orderBillNo)
+		{
+			List<Order> lOrders = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).ToListAsync();
+			if (lOrders.Count == 0)
+				return NotFound();
+			for (int i = 0; i < lOrders.Count; i++) { 
+				lOrders[i].ConfirmFlag = true;
+			}
+
+			var update = await db.SaveChangesAsync();
+			if (update != 0)
+				return Ok();
+			return BadRequest();
+		}	  
+
+		[HttpGet("GetOrder")]
+		public async Task<List<Order>> GetOrder(int orderBillNo)
+		{
+			List<Order> lOrders = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).ToListAsync();
+			return lOrders;
+
+		}
+		[HttpGet("TotalOrderPay")]
+		public async Task<IActionResult> TotalOrderPay(int orderBillNo)
+		{
+			TotalOrder oldOrder = await db.TotalOrders.FirstOrDefaultAsync(o => o.ToBillNo == orderBillNo);
+			if (oldOrder == null)
+				return NotFound();
+			oldOrder.PayFlag = true;
+			var update = await db.SaveChangesAsync();
+			if(update != 0)
+				return Ok();
+			return BadRequest(); 
+		}
+
+		private void calcTotal(int? billNo, int? tableNo)
+		{
+			var total = db.Orders.Where(i => i.OrderBillNo == billNo).Sum(i => i.OrderTotal);
+			TotalOrder totalorder = db.TotalOrders.FirstOrDefault(i => i.ToBillNo == billNo);
+			if (totalorder == null)
+			{
+				TotalOrder nTotalOrder = new TotalOrder();
+				nTotalOrder.ToBillNo = billNo;
+				nTotalOrder.ToTableNo = tableNo;
+				nTotalOrder.ToDate = DateTime.Now;
+				nTotalOrder.ToTotal = total;
+				nTotalOrder.PayFlag = false;
+				db.TotalOrders.Add(nTotalOrder);
+			}
+			else { 
+				totalorder.ToTotal = total;
+			}
+			db.SaveChanges();
+		}
 	}
 }

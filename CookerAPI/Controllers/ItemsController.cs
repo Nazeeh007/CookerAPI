@@ -21,12 +21,7 @@ namespace CookerAPI.Controllers
 			return items;
 		}
 
-		public async Task<List<Group>> GetAllGroups()
-		{
-			var groups = await db.Groups.ToListAsync();
-			return groups;
-		}
-		[HttpGet("GetSearchItemss")]
+		[HttpGet("GetSearchItems")]
 		public async Task<List<Item>> GetSearchItemss(string str)
 		{
 
@@ -36,7 +31,7 @@ namespace CookerAPI.Controllers
 			return items;
 		}
 
-		[HttpGet("AddItem")]
+		[HttpPost("AddItem")]
 		public async Task<IActionResult> AddItem([FromBody] Item item)
 		{
 			await db.Items.AddAsync(item);
@@ -93,13 +88,13 @@ namespace CookerAPI.Controllers
 			}
 			return BadRequest();
 		}
-		[HttpGet("ChangeGroupStatus")]
-		public async Task<IActionResult> ChangeGroupStatus(int groupId, bool status)
+		[HttpGet("ChangeItemStatus")]
+		public async Task<IActionResult> ChangeItemStatus(int itemId, bool status)
 		{
-			var group = db.Groups.FirstOrDefault(u => u.Id == groupId);
-			if (group != null)
+			var item = db.Items.FirstOrDefault(u => u.Id == itemId);
+			if (item != null)
 			{
-				group.Gstatus = status;
+				item.ItmStatus = status;
 				var updated = await db.SaveChangesAsync();
 				if (updated != 0)
 					return Ok();
