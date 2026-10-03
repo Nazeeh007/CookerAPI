@@ -6,11 +6,11 @@ namespace CookerAPI.Controllers
 {
 	[Route("[controller]")]
 	[ApiController]
-	public class UserController : ControllerBase
+	public class UsersController : ControllerBase
 	{
 		private readonly CookerDbContext db;
 
-		public UserController(CookerDbContext context)
+		public UsersController(CookerDbContext context)
 		{
 			db = context;
 		}
@@ -144,7 +144,7 @@ namespace CookerAPI.Controllers
 					nwUserRole.RoleId = roleId;
 					await db.UserRoles.AddAsync(nwUserRole);
 					var updated = await db.SaveChangesAsync();
-					if (updated == 0)
+					if (updated != 0)
 						return Ok();
 					return BadRequest();
 				}
