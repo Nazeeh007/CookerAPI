@@ -72,22 +72,31 @@ namespace CookerAPI.Controllers
 			return LUsers;
 		}
 
-		[HttpGet("GeUsers")]
-		public async Task<List<UserPass>> GetUsers(int id)
+		[HttpGet("GetUsers")]
+		//public async Task<List<UserPass>> GetUsers(int id)
+		//{
+		//	List<UserPass> LUsers = new List<UserPass>();
+		//	var usr = db.UserPasses.FirstOrDefault(u => u.Id == id);
+		//	if (usr != null)
+		//	{
+		//		LUsers.Add(usr);
+		//	}
+		//	return LUsers;
+		//}
+		public async Task<UserPass> GetUsers(int id)
 		{
-			List<UserPass> LUsers = new List<UserPass>();
 			var usr = db.UserPasses.FirstOrDefault(u => u.Id == id);
 			if (usr != null)
 			{
-				LUsers.Add(usr);
+				return usr;
 			}
-			return LUsers;
+			return null;
 		}
 
 		[HttpPost("EditUser")]
 		public async Task<IActionResult> EditUser([FromBody] UserPass user)
 		{
-			var oldUser = db.UserPasses.FirstOrDefault(i => i.UserName == user.UserName && i.Pass == user.Pass);
+			var oldUser = db.UserPasses.FirstOrDefault(i => i.Id == user.Id);
 			oldUser.EmployeeName = user.EmployeeName;
 			oldUser.UserName = user.UserName;
 			oldUser.Pass = user.Pass;
@@ -100,17 +109,23 @@ namespace CookerAPI.Controllers
 
 		}
 		[HttpGet("ChangeUserStatus")]
-		public async Task<IActionResult> ChangeUserStatus(int UserId, bool status)
+		public async Task<IActionResult> ChangeUserStatus(int userId, bool status)
 		{
-			var user = db.UserPasses.FirstOrDefault(u => u.Id == UserId);
-			if (user != null)
+			var user = await db.UserPasses.FindAsync(userId);
+
+			if (user == null)
+				return NotFound();
+
+			user.UserStatus = status;
+
+			await db.SaveChangesAsync();
+
+			return Ok(new
 			{
-				user.UserStatus = status;
-				var updated = await db.SaveChangesAsync();
-				if (updated != 0)
-					return Ok();
-			}
-			return BadRequest();
+				message = "User status updated successfully",
+				userId = user.Id,
+				status = user.UserStatus
+			});
 		}
 		[HttpGet("GetAllRoles")]
 		public async Task<List<Role>> GetAllRoles()
@@ -121,10 +136,10 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("GetUserRoles")]
-		public async Task<List<UserRole>> GetUserRoles(int id)
+		public async Task<List<UserRolesName>> GetUserRoles(int id)
 		{
 
-			var ListUserRoles = await db.UserRoles.Where(u => u.UserId == id).ToListAsync();
+			var ListUserRoles = await db.UserRolesNames.Where(u => u.UserId == id).ToListAsync();
 			return ListUserRoles;
 		}
 
