@@ -1,7 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
-using CookerAPI.Models;
+﻿using CookerAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
@@ -23,8 +20,8 @@ namespace CookerAPI.Controllers
 
 		}
 		[HttpGet("GetAllItems")]
-		public async Task<List<Item>> GetAllItems() { 
-			var items =await db.Items.ToListAsync();
+		public async Task<List<ItemView>> GetAllItems() { 
+			var items =await db.ItemViews.ToListAsync();
 			for (int i = 0; i < items.Count(); i++)
 			{
 				items[i].ItmImage = Path.Combine(_environment.WebRootPath, "Image", items[i].ItmImage);
@@ -33,9 +30,9 @@ namespace CookerAPI.Controllers
 			return items;
 		}
 		[HttpGet("GetAllItemsByGroup")]
-		public async Task<List<Item>> GetAllItemsByGroup(int grpId)
+		public async Task<List<ItemView>> GetAllItemsByGroup(int grpId)
 		{
-			var items = await db.Items.Where(i => i.Gid== grpId).ToListAsync();
+			var items = await db.ItemViews.Where(i => i.Gid == grpId).ToListAsync();
 			for (int i = 0; i < items.Count(); i++)
 			{
 				items[i].ItmImage = Path.Combine(_environment.WebRootPath, "Image", items[i].ItmImage);
@@ -45,12 +42,12 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("GetSearchItems")]
-		public async Task<List<Item>> GetSearchItemss(string str)
+		public async Task<List<ItemView>> GetSearchItemss(string str)
 		{
 
 			int.TryParse(str, out int itemId);
-			List<Item> items = new List<Item>();
-			items = await db.Items.Where(i => i.Id == itemId || i.ItmName.Contains(str)).ToListAsync();
+			List<ItemView> items = new List<ItemView>();
+			items = await db.ItemViews.Where(i => i.Expr1 == itemId || i.ItmName.Contains(str)).ToListAsync();
 			for (int i = 0; i < items.Count(); i++)
 			{
 				items[i].ItmImage = Path.Combine(_environment.WebRootPath, "Image", items[i].ItmImage);
@@ -60,7 +57,7 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpPost("AddItem")]
-		public async Task<IActionResult> AddItem([FromBody] Item item)
+		public async Task<IActionResult> AddItem([FromBody] ItemView item)
 		{
 			var ext = ".Png";
 			var Fname = Guid.NewGuid() + ext;
@@ -79,7 +76,7 @@ namespace CookerAPI.Controllers
 			}
 
 			item.ItmImage = Fname;
-			await db.Items.AddAsync(item);
+			await db.ItemViews.AddAsync(item);
 			var update = await db.SaveChangesAsync();
 
 			if (update != 0)
@@ -90,9 +87,9 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("GetItem")]
-		public async Task<Item> GetItem(int itemId)
+		public async Task<ItemView> GetItem(int itemId)
 		{
-			var item = await db.Items.FirstOrDefaultAsync(g => g.Id == itemId);
+			var item = await db.ItemViews.FirstOrDefaultAsync(g => g.Expr1 == itemId);
 			if (item.ItmImage != null)
 			{
 				item.ItmImage = Path.Combine(_environment.WebRootPath, "Image", item.ItmImage);
@@ -102,9 +99,9 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("EditItem")]
-		public async Task<IActionResult> EditItem([FromBody] Item item)
+		public async Task<IActionResult> EditItem([FromBody] ItemView item)
 		{
-			Item oldItem = await db.Items.FirstOrDefaultAsync(g => g.Id == item.Id);
+			ItemView oldItem = await db.ItemViews.FirstOrDefaultAsync(g => g.Expr1 == item.Expr1);
 			if (oldItem != null)
 			{
 				if (item.ItmName != null)

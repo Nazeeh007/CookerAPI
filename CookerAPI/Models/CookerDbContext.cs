@@ -15,6 +15,8 @@ public partial class CookerDbContext : DbContext
 
     public virtual DbSet<Item> Items { get; set; }
 
+    public virtual DbSet<ItemView> ItemViews { get; set; }
+
     public virtual DbSet<Order> Orders { get; set; }
 
     public virtual DbSet<OrdersView> OrdersViews { get; set; }
@@ -44,6 +46,19 @@ public partial class CookerDbContext : DbContext
         modelBuilder.Entity<Item>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ItmDesc).HasMaxLength(150);
+            entity.Property(e => e.ItmName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<ItemView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("ItemView");
+
+            entity.Property(e => e.Gname)
+                .HasMaxLength(100)
+                .HasColumnName("GName");
             entity.Property(e => e.ItmDesc).HasMaxLength(150);
             entity.Property(e => e.ItmName).HasMaxLength(100);
         });
