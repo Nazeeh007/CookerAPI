@@ -46,22 +46,34 @@ namespace CookerAPI.Controllers
 			}
 			nOrder.OrderDate = DateTime.Now;
 			nOrder.Quntity = 1;
-			if (nOrder.OrderPrice == 0)
-			{
-				nOrder.OrderPrice = await db.Items.Where(i => i.Id == nOrder.ItmId).Select(i => i.ItmPrice).FirstOrDefaultAsync();
-			}
-			nOrder.OrderTotal= nOrder.OrderPrice * nOrder.Quntity;
-			nOrder.ConfirmFlag=false;
+			
+			//nOrder.OrderPrice = await db.Items.Where(i => i.Id == nOrder.ItmId).Select(i => i.ItmPrice).FirstOrDefaultAsync();
+			Item item = await db.Items.FindAsync(nOrder.ItmId);
 
-			db.Orders.Add(nOrder);
-			var update = await db.SaveChangesAsync();
-			if (update != 0) { 
-				calcTotal(nOrder.OrderBillNo, nOrder.OrderTableNo);
-				return Ok();
+			if (item != null)
+			{
+				//vale.Date to get the date
+				Order oldOrder = db.Orders.FirstOrDefault(i => i.OrderTableNo == nOrder.OrderTableNo && i.OrderBillNo == nOrder.OrderBillNo && i.ItmId == item.Id && i.OrderDate.Value.Date == DateTime.Now.Date);
+				if (oldOrder == null)
+				{
+
+					nOrder.OrderPrice = item.ItmPrice;
+					nOrder.OrderTotal = nOrder.OrderPrice * nOrder.Quntity;
+					nOrder.ConfirmFlag = false;
+					db.Orders.Add(nOrder);
+				}
+				else {
+					oldOrder.Quntity++;
+					oldOrder.OrderTotal = oldOrder.Quntity * item.ItmPrice;
+				}
+				var update = await db.SaveChangesAsync();
+				if (update != 0)
+				{
+					calcTotal(nOrder.OrderBillNo, nOrder.OrderTableNo);
+					return Ok();
+				}
 			}
 			return BadRequest();
-
-
 		}
 
 		[HttpGet("ChangeQuantity")]
