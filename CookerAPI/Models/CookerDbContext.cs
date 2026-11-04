@@ -76,6 +76,7 @@ public partial class CookerDbContext : DbContext
                 .ToView("OrdersView");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ItmName).HasMaxLength(100);
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
         });
 

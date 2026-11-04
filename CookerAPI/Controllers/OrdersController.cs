@@ -1,7 +1,7 @@
 ﻿using CookerAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace CookerAPI.Controllers
 {
@@ -10,10 +10,14 @@ namespace CookerAPI.Controllers
 	public class OrdersController : ControllerBase
 	{
 		private readonly CookerDbContext db;
+		private IHostingEnvironment _environment;
 
-		public OrdersController(CookerDbContext context)
+
+		public OrdersController(CookerDbContext context, IHostingEnvironment environment)
 		{
 			db = context;
+			_environment = environment;
+
 		}
 
 		[HttpGet("GetAllItemsByGroup")]
@@ -127,12 +131,30 @@ namespace CookerAPI.Controllers
 		}	  
 
 		[HttpGet("GetOrder")]
-		public async Task<List<Order>> GetOrder(int orderBillNo)
+		public async Task<List<OrdersView>> GetOrder(int orderBillNo)
 		{
-			List<Order> lOrders = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).ToListAsync();
+			List<OrdersView> lOrders = await db.OrdersViews.Where(o => o.OrderBillNo == orderBillNo).ToListAsync();
+			for (int i = 0; i < lOrders.Count(); i++)
+			{
+				if (lOrders[i].ItmImage != null)
+				{
+					lOrders[i].ItmImage = Path.Combine(_environment.WebRootPath, "Image", lOrders[i].ItmImage);
+				}
+			}
 			return lOrders;
 
 		}
+
+		[HttpGet("OrderHeader")]
+		public async Task<OrderHeader> OrderHeader(int orderBillNo)
+		{
+			OrderHeader orderHeader = new OrderHeader();
+			orderHeader.CCount = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).CountAsync();
+			orderHeader.Total = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).SumAsync(o => o.OrderTotal);
+			return orderHeader;
+
+		}
+
 		[HttpGet("TotalOrderPay")]
 		public async Task<IActionResult> TotalOrderPay(int orderBillNo)
 		{
