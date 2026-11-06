@@ -1,5 +1,6 @@
 ﻿using CookerAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
@@ -10,14 +11,15 @@ namespace CookerAPI.Controllers
 	public class OrdersController : ControllerBase
 	{
 		private readonly CookerDbContext db;
+		private readonly IHubContext<ChatHub> _chatHub;
 		private IHostingEnvironment _environment;
 
 
-		public OrdersController(CookerDbContext context, IHostingEnvironment environment)
+		public OrdersController(CookerDbContext context, IHostingEnvironment environment, IHubContext<ChatHub> hubContext)
 		{
 			db = context;
 			_environment = environment;
-
+			_chatHub = hubContext;
 		}
 
 		[HttpGet("GetAllItemsByGroup")]
@@ -123,6 +125,8 @@ namespace CookerAPI.Controllers
 			for (int i = 0; i < lOrders.Count; i++) { 
 				lOrders[i].ConfirmFlag = true;
 			}
+			await _chatHub.Clients.All.SendAsync("MessageReceived", orderBillNo);
+			
 
 			var update = await db.SaveChangesAsync();
 			if (update != 0)
@@ -168,6 +172,15 @@ namespace CookerAPI.Controllers
 			return BadRequest(); 
 		}
 
+		[HttpGet("GetAllOrders")]
+		public async Task<List<TotalOrder>> GetAllOrders()
+		{
+
+			List<TotalOrder> LtotalOrder = await db.TotalOrders.Where(I => I.PayFlag != null).ToListAsync();
+
+			return LtotalOrder;
+		}
+
 		private void calcTotal(int? billNo, int? tableNo)
 		{
 			var total = db.Orders.Where(i => i.OrderBillNo == billNo).Sum(i => i.OrderTotal);
@@ -187,5 +200,7 @@ namespace CookerAPI.Controllers
 			}
 			db.SaveChanges();
 		}
+
+		
 	}
 }

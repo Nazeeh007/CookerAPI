@@ -41,7 +41,10 @@ namespace CookerAPI
 
             app.MapControllers();
 
-            app.UseStaticFiles();
+			app.MapHub<ChatHub>("/chat");
+
+
+			app.UseStaticFiles();
 
             app.Run();
         }
