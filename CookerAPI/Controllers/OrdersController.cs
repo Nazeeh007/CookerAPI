@@ -150,11 +150,11 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("OrderHeader")]
-		public async Task<OrderHeader> OrderHeader(int orderBillNo)
+		public async Task<OrderHeader> OrderHeader(int orderTableNo)
 		{
 			OrderHeader orderHeader = new OrderHeader();
-			orderHeader.CCount = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).CountAsync();
-			orderHeader.Total = await db.Orders.Where(o => o.OrderBillNo == orderBillNo).SumAsync(o => o.OrderTotal);
+			orderHeader.CCount = await db.OrdersViews.Where(o => o.OrderTableNo == orderTableNo && o.PayFlag ==false).CountAsync();
+			orderHeader.Total = await db.OrdersViews.Where(o => o.OrderTableNo == orderTableNo && o.PayFlag == false).SumAsync(o => o.OrderTotal);
 			return orderHeader;
 
 		}
