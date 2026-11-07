@@ -181,6 +181,16 @@ namespace CookerAPI.Controllers
 			return LtotalOrder;
 		}
 
+		[HttpGet("GetAllOrdersReports")]
+		public async Task<List<TotalOrder>> GetAllOrdersReports(string strOrderDate)
+		{
+			DateTime orderDate = Convert.ToDateTime(strOrderDate);
+
+			List<TotalOrder> LtotalOrder = await db.TotalOrders.Where(I => I.PayFlag == true && I.ToDate.Value.Date == orderDate).ToListAsync();
+
+			return LtotalOrder;
+		}
+
 		private void calcTotal(int? billNo, int? tableNo)
 		{
 			var total = db.Orders.Where(i => i.OrderBillNo == billNo).Sum(i => i.OrderTotal);

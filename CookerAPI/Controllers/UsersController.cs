@@ -16,16 +16,27 @@ namespace CookerAPI.Controllers
 		}
 
 		[HttpGet("Login")]
-		public IActionResult Login(string username, string password)
-		{ 
-			var user =db.UserPasses.FirstOrDefault(u => u.UserName == username && u.Pass == password);
-			if(user != null)
+		//public IActionResult Login(string username, string password)
+		//{ 
+		//	var user =db.UserPasses.FirstOrDefault(u => u.UserName == username && u.Pass == password);
+		//	if(user != null)
+		//	{
+		//		//return user.Id;
+		//		return Ok();
+		//	}
+		//	//return 0;
+		//	return BadRequest();
+		//}
+		public int Login(string username, string password)
+		{
+			var user = db.UserPasses.FirstOrDefault(u => u.UserName == username && u.Pass == password);
+			if (user != null)
 			{
 				//return user.Id;
-				return Ok();
+				return user.Id;
 			}
 			//return 0;
-			return BadRequest();
+			return 0;
 		}
 		[HttpGet("ChangePassword")]
 		public async Task<IActionResult> ChangePassword(int UserId, string oldPassword, string newPassword)
