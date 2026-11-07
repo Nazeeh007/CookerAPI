@@ -1,4 +1,5 @@
-﻿using CookerAPI.Models;
+﻿using System.Diagnostics.Eventing.Reader;
+using CookerAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -155,6 +156,9 @@ namespace CookerAPI.Controllers
 			OrderHeader orderHeader = new OrderHeader();
 			orderHeader.CCount = await db.OrdersViews.Where(o => o.OrderTableNo == orderTableNo && o.PayFlag ==false).CountAsync();
 			orderHeader.Total = await db.OrdersViews.Where(o => o.OrderTableNo == orderTableNo && o.PayFlag == false).SumAsync(o => o.OrderTotal);
+			var tttoalOrder = await db.TotalOrders.FirstOrDefaultAsync(o => o.ToTableNo == orderTableNo && o.PayFlag == false);
+			if (tttoalOrder == null) { orderHeader.BillNo = 0; }
+			else { orderHeader.BillNo = tttoalOrder.ToBillNo; }
 			return orderHeader;
 
 		}
