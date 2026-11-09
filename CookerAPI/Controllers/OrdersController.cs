@@ -180,7 +180,7 @@ namespace CookerAPI.Controllers
 		public async Task<List<TotalOrder>> GetAllOrders()
 		{
 
-			List<TotalOrder> LtotalOrder = await db.TotalOrders.Where(I => I.PayFlag != null).ToListAsync();
+			List<TotalOrder> LtotalOrder = await db.TotalOrders.Where(I => I.PayFlag != true).ToListAsync();
 
 			return LtotalOrder;
 		}
